@@ -31,11 +31,19 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          if git diff --quiet HEAD airspace.geojson; then
-            echo "No changes detected in airspace.geojson"
-            echo "changes_detected=false" >> $GITHUB_OUTPUT
+          # Check if file exists in repository
+          if git ls-files --error-unmatch airspace.geojson 2>/dev/null; then
+            # File exists in repo, check for changes
+            if git diff --quiet HEAD airspace.geojson; then
+              echo "File exists but no changes detected in airspace.geojson"
+              echo "changes_detected=false" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected in existing airspace.geojson"
+              echo "changes_detected=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Changes detected in airspace.geojson"
+            # File doesn't exist in repo yet (first run)
+            echo "airspace.geojson is a new file"
             echo "changes_detected=true" >> $GITHUB_OUTPUT
           fi
         
