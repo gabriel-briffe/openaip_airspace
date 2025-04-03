@@ -1,0 +1,4 @@
+oaip/**
+temp/
+*.geojson
+.DS_Store
