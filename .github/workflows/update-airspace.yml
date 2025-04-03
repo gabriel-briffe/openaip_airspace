@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Needed to check for changes
         
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,46 +26,16 @@ jobs:
       - name: Process airspace data
         run: python process_airspace.py
         
-      - name: Check for changes
-        id: check_changes
-        run: |
-          # Check if file exists in repository
-          if git ls-files --error-unmatch airspace.geojson 2>/dev/null; then
-            # File exists in repo, check for changes
-            if git diff --quiet HEAD airspace.geojson; then
-              echo "File exists but no changes detected in airspace.geojson"
-              echo "changes_detected=false" >> $GITHUB_OUTPUT
-            else
-              echo "Changes detected in existing airspace.geojson"
-              echo "changes_detected=true" >> $GITHUB_OUTPUT
-            fi
-          else
-            # File doesn't exist in repo yet (first run)
-            echo "airspace.geojson is a new file"
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-          fi
-        
       - name: Upload versioned airspace file
         uses: actions/upload-artifact@v4
         with:
           name: airspace-geojson
           path: airspace_*.geojson
           
-      - name: Commit and push if changed
-        if: steps.check_changes.outputs.changes_detected == 'true'
-        run: |
-          git config --global user.name 'GitHub Action'
-          git config --global user.email 'action@github.com'
-          git add airspace.geojson airspace_*.geojson
-          git commit -m "Update airspace data [skip ci]"
-          git push
-          
       - name: Set current date as env variable
-        if: steps.check_changes.outputs.changes_detected == 'true'
         run: echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         
       - name: Create Release
-        if: steps.check_changes.outputs.changes_detected == 'true'
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
