@@ -6,6 +6,10 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:  # Allow manual triggering
 
+# Explicitly set permissions needed for GitHub releases
+permissions:
+  contents: write
+  
 jobs:
   update-airspace:
     runs-on: ubuntu-latest
@@ -25,30 +29,22 @@ jobs:
           
       - name: Process airspace data
         run: python process_airspace.py
+        # Note: We're modifying process_airspace.py to no longer create versioned files
         
-      - name: Upload versioned airspace file
-        uses: actions/upload-artifact@v4
-        with:
-          name: airspace-geojson
-          path: airspace_*.geojson
-          
       - name: Set current date as env variable
         run: echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         
       - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
           name: Airspace Data ${{ env.RELEASE_DATE }}
-          tag_name: release-${{ env.RELEASE_DATE }}
-          files: |
-            airspace.geojson
-            airspace_*.geojson
+          tag: release-${{ env.RELEASE_DATE }}
+          artifacts: airspace.geojson
           body: |
             Updated airspace data for ${{ env.RELEASE_DATE }}
             
-            ### Stable URLs
-            - Latest release: https://github.com/${{ github.repository }}/releases/latest
-            - Direct download airspace.geojson: https://github.com/${{ github.repository }}/releases/latest/download/airspace.geojson
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+            ### Stable URL
+            Direct download: https://github.com/${{ github.repository }}/releases/latest/download/airspace.geojson
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          replacesArtifacts: true 

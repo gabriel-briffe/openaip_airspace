@@ -13,8 +13,7 @@ The pipeline processes OpenAir format airspace data from OpenAIP's Google Cloud 
 3. Validate and correct block structures (`block_validation.py`)
 4. Convert OpenAir to JSON format (`openair2json.py`)
 5. Convert JSON to GeoJSON format (`json2geojson.py`)
-6. Create versioned output files
-7. Clean up temporary files after successful execution
+6. Clean up temporary files after successful execution
 
 ## Usage
 
@@ -33,7 +32,7 @@ The pipeline processes OpenAir format airspace data from OpenAIP's Google Cloud 
 The script will:
 - Download specified airspace files from the OpenAIP Google Cloud Storage bucket
 - Process them through the validation and conversion steps
-- Create both a current `airspace.geojson` file and a timestamped version
+- Create the `airspace.geojson` file
 - Clean up all temporary files after successful execution (if an error occurs, temp files are preserved for debugging)
 
 ### GitHub Action
@@ -41,18 +40,16 @@ The script will:
 This repository is configured to run as a GitHub Action:
 - It runs automatically every day at 2 AM UTC
 - It can be triggered manually via the workflow_dispatch event
-- The processed GeoJSON files are committed back to the repository
-- Versioned files are also available as artifacts from the workflow run
-- If changes are detected in the output files, a new GitHub release is created
+- The processed GeoJSON file is published as a GitHub release
+- Each release is tagged with the date (e.g., `release-2023-04-04`)
 
 ### Accessing the Latest Airspace Data
 
-The latest processed airspace data is available through GitHub releases. You can access it at these stable URLs:
+The latest processed airspace data is available through GitHub releases. You can access it at this stable URL:
 
-- Latest release page: `https://github.com/[username]/[repository]/releases/latest`
-- Direct download link for airspace.geojson: `https://github.com/[username]/[repository]/releases/latest/download/airspace.geojson`
+- Direct download link: `https://github.com/[username]/[repository]/releases/latest/download/airspace.geojson`
 
-These URLs will always point to the most recent release, making them suitable for integration with external applications.
+This URL will always point to the most recent release, making it suitable for integration with external applications.
 
 ## File Structure
 
@@ -61,8 +58,7 @@ These URLs will always point to the most recent release, making them suitable fo
   - `validatedOpenairFiles/` - Files after initial validation
   - `blockValidatedOpenairFiles/` - Files after block structure validation
   - `json/` - Intermediate JSON representation
-- `airspace.geojson` - Final GeoJSON output
-- `airspace_[timestamp].geojson` - Versioned GeoJSON output
+- `airspace.geojson` - Final GeoJSON output (only in the release, not in the repository)
 
 ## Scripts
 

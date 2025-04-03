@@ -65,18 +65,6 @@ def run_json_to_geojson():
     print("\nConverting JSON to GeoJSON...")
     subprocess.run(["python", "json2geojson.py"], check=True)
 
-def create_versioned_output():
-    """Create a versioned copy of the final airspace.geojson file."""
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    source_file = "airspace.geojson"
-    versioned_file = f"airspace_{timestamp}.geojson"
-    
-    if os.path.exists(source_file):
-        shutil.copy2(source_file, versioned_file)
-        print(f"\nCreated versioned output: {versioned_file}")
-    else:
-        print(f"Error: {source_file} does not exist!")
-
 def cleanup_temp_directory():
     """Remove the temp directory and all its contents."""
     if os.path.exists(TEMP_DIR):
@@ -99,10 +87,7 @@ def main():
         run_openair_to_json()
         run_json_to_geojson()
         
-        # Step 4: Create versioned output
-        create_versioned_output()
-        
-        # Step 5: Clean up temp directory after successful run
+        # Step 4: Clean up temp directory after successful run
         cleanup_temp_directory()
         
         print("\nAirspace processing pipeline completed successfully!")
