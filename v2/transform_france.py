@@ -30,6 +30,7 @@ def transform_france_airspace(input_file, output_file):
     - lowerLimitMeters = converted AL value in meters
     
     Type Rules:
+    - If class is E and name starts with "LTA " → type = E
     - If type is GSEC → type = GLIDING_SECTOR
     - If type is AERIAL_SPORTING_RECREATIONAL → type = ACTIVITY
     - If class is A, B, C, D, E, F, or G → type = class
@@ -100,22 +101,26 @@ def transform_france_airspace(input_file, output_file):
         # Determine final type value based on the rules
         final_type = None
         
-        # Rule 1: If type is GSEC → type = GLIDING_SECTOR
-        if airspace_type == 'GSEC':
+        # Rule 1: If class is E and name starts with "LTA " → type = E
+        name = props.get('name', '')
+        if airspace_class == 'E' and name and name.startswith("LTA "):
+            final_type = 'E'
+        # Rule 2: If type is GSEC → type = GLIDING_SECTOR
+        elif airspace_type == 'GSEC':
             final_type = 'GLIDING_SECTOR'
-        # Rule 2: If type is AERIAL_SPORTING_RECREATIONAL → type = ACTIVITY
+        # Rule 3: If type is AERIAL_SPORTING_RECREATIONAL → type = ACTIVITY
         elif airspace_type == 'AERIAL_SPORTING_RECREATIONAL':
             final_type = 'ACTIVITY'
-        # Rule 3: If class is A, B, C, D, E, F, or G → type = class
+        # Rule 4: If class is A, B, C, D, E, F, or G → type = class
         elif airspace_class and airspace_class in ['A', 'B', 'C', 'D', 'E', 'F', 'G']:
             final_type = airspace_class
-        # Rule 4: If type is P → type = PROHIBITED
+        # Rule 5: If type is P → type = PROHIBITED
         elif airspace_type == 'P':
             final_type = 'PROHIBITED'
-        # Rule 5: If type is Q → type = DANGER
+        # Rule 6: If type is Q → type = DANGER
         elif airspace_type == 'Q':
             final_type = 'DANGER'
-        # Rule 6: If type is R → type = RESTRICTED
+        # Rule 7: If type is R → type = RESTRICTED
         elif airspace_type == 'R':
             final_type = 'RESTRICTED'
         # Default: Use original type
