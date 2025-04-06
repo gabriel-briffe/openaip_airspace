@@ -9,6 +9,9 @@ from collections import defaultdict
 # Import the is_standard_altitude_format function from analyze_geojson.py
 from analyze_geojson import is_standard_altitude_format
 
+# Import the convert_altitude_to_meters function from json2geojson.py
+from json2geojson import convert_altitude_to_meters
+
 def transform_france_airspace(input_file, output_file):
     """
     Transform France GeoJSON airspace data to match the structure of the main airspace.geojson.
@@ -23,6 +26,8 @@ def transform_france_airspace(input_file, output_file):
     - AN = name
     - AY = type
     - type = modified type based on rules
+    - upperLimitMeters = converted AH value in meters
+    - lowerLimitMeters = converted AL value in meters
     
     Type Rules:
     - If type is GSEC → type = GLIDING_SECTOR
@@ -162,7 +167,9 @@ def transform_france_airspace(input_file, output_file):
             "AI": str(uuid.uuid4()),                 # generated unique ID
             "AN": props.get('name'),                 # name
             "AY": airspace_type,                     # original type
-            "type": final_type                       # modified type according to rules
+            "type": final_type,                       # modified type according to rules
+            "upperLimitMeters": convert_altitude_to_meters(upper_limit_str),  # converted AH value in meters
+            "lowerLimitMeters": convert_altitude_to_meters(lower_limit_str)   # converted AL value in meters
         }
         
         # Check for non-standard altitude formats
