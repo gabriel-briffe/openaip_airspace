@@ -28,28 +28,41 @@ jobs:
           pip install -r requirements.txt
           
       - name: Process airspace data (v2)
+        id: process
         run: |
           cd v2
           python process_airspace.py
+          if [ -f "NO_CHANGES" ]; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in input files, skipping release creation"
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected, will create a new release"
+          fi
           
       - name: Rename output file to maintain compatibility
+        if: steps.process.outputs.changes == 'true'
         run: |
           cp v2/airspace_with_france.geojson airspace.geojson
+          cp v2/checksums.json checksums.json
         
       - name: Set current date as env variable
+        if: steps.process.outputs.changes == 'true'
         run: echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
         
       - name: Create Release
+        if: steps.process.outputs.changes == 'true'
         uses: ncipollo/release-action@v1
         with:
           name: Airspace Data ${{ env.RELEASE_DATE }}
           tag: release-${{ env.RELEASE_DATE }}
-          artifacts: airspace.geojson
+          artifacts: "airspace.geojson,checksums.json"
           body: |
             Updated airspace data for ${{ env.RELEASE_DATE }}
             
-            ### Stable URL
+            ### Stable URLs
             Direct download: https://github.com/${{ github.repository }}/releases/latest/download/airspace.geojson
+            Checksums: https://github.com/${{ github.repository }}/releases/latest/download/checksums.json
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
           replacesArtifacts: true 

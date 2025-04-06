@@ -2,3 +2,4 @@ oaip/**
 temp/
 .DS_Store
 *.geojson
+*.json
