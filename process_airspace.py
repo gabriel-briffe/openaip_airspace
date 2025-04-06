@@ -17,7 +17,7 @@ JSON_DIR = os.path.join(TEMP_DIR, "json")
 # Define bucket information
 BUCKET_NAME = "29f98e10-a489-4c82-ae5e-489dbcd4912f"
 FILES_TO_FETCH = ["fr_asp_extended.txt", "it_asp_extended.txt", 
-                  "au_asp_extended.txt", "ch_asp_extended.txt"]
+                  "at_asp_extended.txt", "ch_asp_extended.txt"]
 
 def download_public_file(bucket_name, source_blob_name, destination_file_name):
     """Downloads a public blob from the bucket."""
