@@ -10,7 +10,7 @@ import hashlib
 import sys
 from google.cloud import storage
 import datetime
-from datetime import UTC
+from datetime import timezone
 
 # Define base temp directory
 TEMP_DIR = "temp"
@@ -289,7 +289,7 @@ def main():
         
         # Add metadata to checksums
         current_checksums["metadata"] = {
-            "timestamp": datetime.datetime.now(UTC).isoformat(),
+            "timestamp": datetime.datetime.now(timezone.utc).isoformat(),
             "version": "2.0"
         }
         
