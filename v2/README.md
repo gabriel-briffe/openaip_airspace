@@ -94,10 +94,9 @@ v2/
 
 The pipeline produces the following outputs:
 
-- `airspace.geojson`: The main airspace data file
+- `airspace.geojson`: The main airspace data file (without France data)
 - `france_transformed.geojson`: Transformed France airspace data
 - `airspace_with_france.geojson`: Final merged airspace data
-- `airspace_with_france_TIMESTAMP.geojson`: Versioned copy of the final output
 
 ## Notes
 

@@ -27,9 +27,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Process airspace data
-        run: python process_airspace.py
-        # Note: We're modifying process_airspace.py to no longer create versioned files
+      - name: Process airspace data (v2)
+        run: |
+          cd v2
+          python process_airspace.py
+          
+      - name: Rename output file to maintain compatibility
+        run: |
+          cp v2/airspace_with_france.geojson airspace.geojson
         
       - name: Set current date as env variable
         run: echo "RELEASE_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
