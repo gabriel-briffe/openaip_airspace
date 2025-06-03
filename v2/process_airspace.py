@@ -219,6 +219,61 @@ def merge_geojson_files():
         print(f"Error merging GeoJSON files: {e}")
         return False
 
+def compare_checksums_intelligently(current_checksums, previous_checksums):
+    """
+    Intelligently compare checksums, handling filename changes gracefully.
+    Returns (files_changed, comparison_details)
+    """
+    if not previous_checksums:
+        return True, "No previous checksums available for comparison"
+    
+    files_changed = False
+    comparison_details = []
+    
+    # Extract base filenames for intelligent matching
+    def get_base_filename(filename):
+        """Extract base filename for comparison (e.g., 'fr_asp_v2.txt' -> 'fr_asp')"""
+        if filename == "france.geojson" or filename == "airspace_with_france.geojson":
+            return filename
+        # Remove common suffixes and extensions
+        base = filename.replace("_extended", "").replace("_v2", "").replace(".txt", "")
+        return base
+    
+    # Group current and previous files by base name
+    current_by_base = {}
+    previous_by_base = {}
+    
+    for filename, checksum in current_checksums.items():
+        if filename != "metadata":
+            base = get_base_filename(filename)
+            current_by_base[base] = (filename, checksum)
+    
+    for filename, checksum in previous_checksums.items():
+        if filename != "metadata":
+            base = get_base_filename(filename)
+            previous_by_base[base] = (filename, checksum)
+    
+    # Compare by base filename
+    for base, (current_file, current_checksum) in current_by_base.items():
+        if base in previous_by_base:
+            previous_file, previous_checksum = previous_by_base[base]
+            if current_checksum != previous_checksum:
+                files_changed = True
+                comparison_details.append(f"File {current_file} (was {previous_file}) has changed checksum")
+            else:
+                comparison_details.append(f"File {current_file} (was {previous_file}) unchanged")
+        else:
+            files_changed = True
+            comparison_details.append(f"File {current_file} is new (no previous equivalent)")
+    
+    # Check for files that were removed
+    for base, (previous_file, _) in previous_by_base.items():
+        if base not in current_by_base:
+            files_changed = True
+            comparison_details.append(f"File {previous_file} was removed")
+    
+    return files_changed, comparison_details
+
 def main():
     print("Starting airspace processing pipeline v2...")
     
@@ -244,23 +299,23 @@ def main():
         sys.exit(1)
     
     # Step 5: Compare checksums to determine if processing is needed
-    files_changed = False
+    files_changed, comparison_details = compare_checksums_intelligently(current_checksums, previous_checksums)
     
-    # If we have previous checksums, compare them
-    if previous_checksums:
-        for file_name, checksum in current_checksums.items():
-            if file_name not in previous_checksums or previous_checksums[file_name] != checksum:
-                files_changed = True
-                print(f"File {file_name} has changed or is new")
-        
-        if not files_changed:
-            print("\nNo input files have changed since the last run. Processing will be skipped.")
-            # Create a marker file to indicate no changes
-            with open("NO_CHANGES", "w") as f:
-                f.write("No changes detected in input files, processing skipped.")
-            sys.exit(0)
-    else:
+    # Print detailed comparison results
+    print("\nChecksum comparison results:")
+    for detail in comparison_details:
+        print(f"  {detail}")
+    
+    if previous_checksums and not files_changed:
+        print("\nNo input files have changed since the last run. Processing will be skipped.")
+        # Create a marker file to indicate no changes
+        with open("NO_CHANGES", "w") as f:
+            f.write("No changes detected in input files, processing skipped.")
+        sys.exit(0)
+    elif not previous_checksums:
         print("No previous checksums available for comparison, will process all files")
+    else:
+        print(f"\nChanges detected, will process files")
     
     # Step 6: Process files
     print("\nProcessing files...")
