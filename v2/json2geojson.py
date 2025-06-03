@@ -283,6 +283,29 @@ def convert_feature(feature):
     }
 
 
+def remap_type_field(feature):
+    """Remap type field values according to standardized naming conventions."""
+    properties = feature.get("properties", {})
+    if "type" in properties:
+        type_value = properties["type"]
+        
+        # Define the remapping rules
+        type_mapping = {
+            "P": "PROHIBITED",
+            "R": "RESTRICTED", 
+            "Q": "DANGER",
+            "ASRA": "ACTIVITY",
+            "OFR": "PROHIBITED",
+            "GSEC": "GLIDING_SECTOR"
+        }
+        
+        # Apply remapping if the type value exists in our mapping
+        if type_value in type_mapping:
+            properties["type"] = type_mapping[type_value]
+    
+    return feature
+
+
 def main():
     json_dir = JSON_DIR
     aggregated_features = []
@@ -351,7 +374,11 @@ def main():
                         if key in properties:
                             altitude_value = re.sub(r'\d+', '', str(properties[key])).strip()
                             altitude_set.add(altitude_value)
-                    aggregated_features.append(convert_feature(feature))
+                    
+                    # Convert feature and apply type remapping
+                    converted_feature = convert_feature(feature)
+                    remapped_feature = remap_type_field(converted_feature)
+                    aggregated_features.append(remapped_feature)
             
             # Report file-specific filtering stats
             print(f"\nFile: {filename}")
