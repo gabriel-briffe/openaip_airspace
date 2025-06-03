@@ -87,7 +87,7 @@ def parse_openair_file(filepath: str) -> list:
 
     def finalize_feature(feature):
         props = feature.get("properties", {})
-        if "AC" in props and props["AC"] != "UNCLASSIFIED":
+        if "AC" in props and props["AC"] != "UNC":
             props["type"] = props["AC"]
         elif "AY" in props:
             props["type"] = props["AY"]
