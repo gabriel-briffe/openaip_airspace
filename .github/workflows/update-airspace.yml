@@ -31,13 +31,39 @@ jobs:
         id: process
         run: |
           cd v2
-          python process_airspace.py
-          if [ -f "NO_CHANGES" ]; then
-            echo "changes=false" >> $GITHUB_OUTPUT
-            echo "No changes detected in input files, skipping release creation"
+          # Clean up any old NO_CHANGES file from previous runs
+          rm -f NO_CHANGES
+          echo "Starting airspace processing..."
+          
+          # Run the Python script and capture exit code
+          if python process_airspace.py; then
+            echo "Python script completed successfully"
+            
+            # Check for NO_CHANGES file and set output accordingly
+            if [ -f "NO_CHANGES" ]; then
+              echo "changes=false" >> $GITHUB_OUTPUT
+              echo "NO_CHANGES file found - skipping release creation"
+              cat NO_CHANGES
+            else
+              echo "changes=true" >> $GITHUB_OUTPUT
+              echo "NO_CHANGES file not found - will create a new release"
+              # Verify output files exist
+              if [ -f "airspace_with_france.geojson" ]; then
+                echo "✓ airspace_with_france.geojson exists"
+              else
+                echo "✗ airspace_with_france.geojson missing"
+                exit 1
+              fi
+              if [ -f "checksums.json" ]; then
+                echo "✓ checksums.json exists"
+              else
+                echo "✗ checksums.json missing"
+                exit 1
+              fi
+            fi
           else
-            echo "changes=true" >> $GITHUB_OUTPUT
-            echo "Changes detected, will create a new release"
+            echo "Python script failed with exit code: $?"
+            exit 1
           fi
           
       - name: Rename output file to maintain compatibility
