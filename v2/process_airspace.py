@@ -23,8 +23,8 @@ JSON_DIR = os.path.join(TEMP_DIR, "json")
 
 # Define bucket information
 BUCKET_NAME = "29f98e10-a489-4c82-ae5e-489dbcd4912f"
-FILES_TO_FETCH = ["fr_asp.txt", "it_asp.txt", 
-                  "at_asp.txt", "ch_asp.txt"]
+FILES_TO_FETCH = ["fr_asp_v2.txt", "it_asp_v2.txt", 
+                  "at_asp_v2.txt", "ch_asp_v2.txt"]
 
 # France GeoJSON URL
 FRANCE_GEOJSON_URL = "https://planeur-net.github.io/airspace/france.geojson"
